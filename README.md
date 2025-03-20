@@ -4,9 +4,9 @@ Implement LLM Agents while reading: https://zacharyhuang.substack.com/p/llm-agen
 
 # The plan
 
-- [ ] Setup `uv`
-- [ ] Setup `pytest`
-- [ ] Setup presubmit
+- [x] Setup `uv`
+- [x] Setup `pytest`
+- [x] Setup presubmit
 - [ ] Simple prototype that can call Gemini
 - [ ] Simple prototype that can call Google Search
 - [ ] Design a graph of agent
