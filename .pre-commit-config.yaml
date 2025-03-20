@@ -1,0 +1,64 @@
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+  - post-checkout
+  - post-merge
+  - post-rewrite
+
+# The hooks below are organized by stages, and then by run order.
+repos:
+
+# Hook: Run lint (no fix) and format
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.11.0
+  hooks:
+    # Run the linter.
+    - id: ruff
+      args: [ --fix ]
+      types_or: [python, pyi]
+    # Run the formatter.
+    - id: ruff-format
+      types_or: [python, pyi]
+
+# Hook: run `uv sync` on checkout/rebase
+- repo: local
+  hooks:
+    - id: pytest-only-changed
+      name: pytest-only-changed
+      description: "Run only the necessary tests before commit"
+      # This cmd find all top level folders
+      # - that contains a file called `pyproject.toml` -- which means it's a project root
+      # - then execute `pytest` in that folder
+      # The manual `exit` are all required to propagate exit code correctly for pre-commit
+      entry: uv run pytest --testmon
+      types_or: [python, pyi]
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [pre-commit]
+    - id: pytest-all
+      name: pytest-all
+      description: "Run all tests before push"
+      # This cmd find all top level folders
+      # - that contains a file called `pyproject.toml` -- which means it's a project root
+      # - then execute `pytest` in that folder
+      # The manual `exit` are all required to propagate exit code correctly for pre-commit
+      entry: uv run pytest
+      types_or: [python, pyi]
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [pre-push]
+    - id: uv-sync
+      name: uv-sync
+      description: "Automatically run 'uv sync' on all projects after a checkout, pull or rebase"
+      # This cmd find all top level folders
+      # - that contains a file called `pyproject.toml` -- which means it's a project root
+      # - then execute `uv sync` in that folder
+      # The manual `exit` are all required to propagate exit code correctly for pre-commit
+      entry: uv sync --locked --all-packages
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: [post-checkout, post-merge, post-rewrite]
