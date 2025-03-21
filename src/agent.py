@@ -1,5 +1,6 @@
 import json
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
@@ -7,10 +8,11 @@ from pydantic import BaseModel
 from llm_client import GeminiClient
 
 
+@dataclass
 class Context:
-    user_input: str = ""
-    knowledge: list[str] = []
-    answer: str = ""
+    user_input: str
+    knowledge: list[str]
+    answer: str
 
 
 class ActionResponse(BaseModel):
@@ -41,7 +43,7 @@ class Action(ABC):
 
 class Agent:
     def __init__(self, actions: list[Action], llm_client: GeminiClient):
-        self.context = Context()
+        self.context = Context(user_input="", knowledge=[], answer="")
         self.actions = {action.name(): action for action in actions}
         self.llm_client = llm_client
 
