@@ -1,16 +1,18 @@
 import os
 
+import click
+
 from agent import Agent, AnswerAction, DecideAction, SearchAction
 from llm_client import GeminiClient
 
 
-def main():
+@click.command()
+@click.argument("user_input")
+def main(user_input):
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set.")
 
-    # user_input = "What is the capital of France?"
-    user_input = "Where does the name Vivian come from?"
     print(f"User input: {user_input}")
     llm_client = GeminiClient(api_key=api_key)
 
