@@ -8,6 +8,8 @@ Run `setup/setup.sh` to set up the development environment
 
 NOTE: The setup script is idempotent, so it's okay if you re-run it.
 
+Fill in your `GEMINI_API_KEY` in `.env.example`, then rename it to `.env` and source it
+
 # The plan
 
 - [x] Setup `uv`
