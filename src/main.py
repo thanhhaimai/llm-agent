@@ -2,7 +2,7 @@ import os
 
 import click
 
-from agent import Agent, AnswerAction, DecideAction, SearchAction
+from agent import Agent, AnswerAction, DecideAction, DeepSearchAction, SearchAction
 from llm_client import GeminiClient
 
 
@@ -18,13 +18,14 @@ def main(user_input):
 
     search_action = SearchAction()
     answer_action = AnswerAction(llm_client=llm_client)
+    deep_search_action = DeepSearchAction()
     decide_action = DecideAction(
         llm_client=llm_client,
-        actions=[search_action, answer_action],
+        actions=[search_action, deep_search_action, answer_action],
     )
     agent = Agent(
         llm_client=llm_client,
-        actions=[search_action, answer_action, decide_action],
+        actions=[decide_action, *decide_action.actions.values()],
     )
 
     print(agent.execute(user_input))

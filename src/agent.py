@@ -2,6 +2,8 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import requests
+from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
 
@@ -89,18 +91,18 @@ class DecideAction(Action):
         schema = json.dumps(ActionResponse.model_json_schema(), indent=2)
 
         prompt = f"""
-        You are a principal researcher with the ability to perform actions to answer the following question:
-        Question: {context.user_input}
-        Previous Research: {context.knowledge}
+You are a principal researcher with the ability to perform actions to answer the following question:
+Question: {context.user_input}
+Previous Research: {context.knowledge}
 
-        # Available Actions
-        {actions}
+# Available Actions
+{actions}
 
-        # Instructions
-        Decide the next action based on the context and available actions.
-        Return your response in json format following this schema:
-        {schema}
-        """
+# Instructions
+Decide the next action based on the context and available actions.
+Return your response in json format following this schema:
+{schema}
+        """.strip()
 
         raw_response = self.llm_client.execute(
             prompt=prompt,
@@ -136,19 +138,49 @@ class SearchAction(Action):
         if not input:
             raise ValueError("No input provided for search action")
 
-        results = self.ddg_client.text(input, max_results=5)
+        results = self.ddg_client.text(input, max_results=1)
         for entry in results:
             result = DdgSearchResult.model_validate(entry)
-            print(f"SearchAction: {result=}")
-            context.knowledge.append(result.body)
+            knowledge = f"{result.title}\n{result.href}\n{result.body}"
+            print(f"SearchAction: {knowledge=}")
+            context.knowledge.append(knowledge)
 
-        response = ActionResponse(
+        return ActionResponse(
             thinking_process="",
             action="decide",
             action_input="",
             reason="",
         )
-        return response
+
+
+class DeepSearchAction(Action):
+    def description(self) -> str:
+        return f"""
+        {self.name()}
+        - description: visit a given website and extract information from it. This is useful when the search action does not provide enough information.
+        - input (str): The URL of the website to visit.
+        """.strip()
+
+    def execute(self, context: Context, input: str) -> ActionResponse | None:
+        if not input:
+            raise ValueError("No input provided for deep search action")
+
+        response = requests.get(input)
+        if response.status_code != 200:
+            raise ValueError(f"Failed to retrieve the website: {input}")
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        text = soup.get_text(separator=" ", strip=True)
+        print(f"DeepSearchAction: {text=}")
+
+        context.knowledge.append(text)
+
+        return ActionResponse(
+            thinking_process="",
+            action="decide",
+            action_input="",
+            reason="",
+        )
 
 
 class AnswerAction(Action):
