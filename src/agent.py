@@ -23,14 +23,12 @@ class ActionResponse(BaseModel):
 
 
 class Action(ABC):
-    @classmethod
-    @abstractmethod
-    def name(cls) -> str:
-        pass
-
     @abstractmethod
     def description(self) -> str:
         pass
+
+    def name(self) -> str:
+        return type(self).__name__[:-6].lower()
 
     def execute(self, context: Context, input: str) -> ActionResponse | None:
         """
@@ -68,10 +66,6 @@ class Agent:
 
 
 class DecideAction(Action):
-    @classmethod
-    def name(cls) -> str:
-        return "decide"
-
     def __init__(self, llm_client: GeminiClient, actions: list[Action]):
         self.llm_client = llm_client
         self.actions = {action.name(): action for action in actions}
@@ -128,10 +122,6 @@ class DdgSearchResult(BaseModel):
 
 
 class SearchAction(Action):
-    @classmethod
-    def name(cls) -> str:
-        return "search"
-
     def __init__(self):
         self.ddg_client = DDGS()
 
@@ -162,10 +152,6 @@ class SearchAction(Action):
 
 
 class AnswerAction(Action):
-    @classmethod
-    def name(cls) -> str:
-        return "answer"
-
     def __init__(self, llm_client: GeminiClient):
         self.llm_client = llm_client
 
