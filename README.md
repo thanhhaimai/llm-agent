@@ -1,6 +1,6 @@
 # LLM Agent
 
-Implement LLM Agents after reading: https://zacharyhuang.substack.com/p/llm-agent-internal-as-a-graph-tutorial
+A minimalist LLM Agent framework.
 
 # Setup
 
@@ -9,18 +9,6 @@ Run `setup/setup.sh` to set up the development environment
 NOTE: The setup script is idempotent, so it's okay if you re-run it.
 
 Fill in your `GEMINI_API_KEY` in `.env.example`, then rename it to `.env` and source it
-
-# The plan
-
-- [x] Setup `uv`
-- [x] Setup `pytest`
-- [x] Setup presubmit
-- [x] Simple prototype that can call Gemini
-- [x] Simple prototype that can call DuckDuckGo
-- [x] Design a graph of agent
-- [x] Implement Decide node
-- [x] Implement Search node
-- [x] Implement Answer node
 
 # Example output
 
@@ -133,3 +121,7 @@ DecideAction: response=ActionResponse(thinking_process='The previous research pr
 ---
 AnswerAction: input='The name Vivian comes from the Latin name Vivianus (masculine) and Viviana (feminine), which mean "alive".'
 ```
+
+## Acknowledgement
+
+Many thanks to https://zacharyhuang.substack.com/p/llm-agent-internal-as-a-graph-tutorial
