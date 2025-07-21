@@ -174,4 +174,7 @@ cython_debug/
 .pypirc
 
 # pytest-testmon cache
-.testmondata
+.testmondata*
+
+.DS_Store
+
