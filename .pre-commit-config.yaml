@@ -7,58 +7,69 @@ default_install_hook_types:
 
 # The hooks below are organized by stages, and then by run order.
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.13.0
+    hooks:
+      # Hook: Run lint with fix
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
 
-# Hook: Run lint (no fix) and format
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  # Ruff version.
-  rev: v0.11.0
-  hooks:
-    # Run the linter.
-    - id: ruff
-      args: [ --fix ]
-      types_or: [python, pyi]
-    # Run the formatter.
-    - id: ruff-format
-      types_or: [python, pyi]
+      # Hook: Run the formatter after fix
+      - id: ruff-format
+        types_or: [python, pyi]
 
-# Hook: run `uv sync` on checkout/rebase
-- repo: local
-  hooks:
-    - id: pytest-only-changed
-      name: pytest-only-changed
-      description: "Run only the necessary tests before commit"
-      # This cmd find all top level folders
-      # - that contains a file called `pyproject.toml` -- which means it's a project root
-      # - then execute `pytest` in that folder
-      # The manual `exit` are all required to propagate exit code correctly for pre-commit
-      entry: uv run pytest --testmon
-      types_or: [python, pyi]
-      language: system
-      pass_filenames: false
-      always_run: true
-      stages: [pre-commit]
-    - id: pytest-all
-      name: pytest-all
-      description: "Run all tests before push"
-      # This cmd find all top level folders
-      # - that contains a file called `pyproject.toml` -- which means it's a project root
-      # - then execute `pytest` in that folder
-      # The manual `exit` are all required to propagate exit code correctly for pre-commit
-      entry: uv run pytest
-      types_or: [python, pyi]
-      language: system
-      pass_filenames: false
-      always_run: true
-      stages: [pre-push]
-    - id: uv-sync
-      name: uv-sync
-      description: "Automatically run 'uv sync' on all projects after a checkout, pull or rebase"
-      # This cmd find all top level folders
-      # - that contains a file called `pyproject.toml` -- which means it's a project root
-      # - then execute `uv sync` in that folder
-      # The manual `exit` are all required to propagate exit code correctly for pre-commit
-      entry: uv sync --locked --all-packages
-      language: system
-      pass_filenames: false
-      always_run: true
-      stages: [post-checkout, post-merge, post-rewrite]
+  - repo: https://github.com/hukkin/mdformat
+    rev: 0.7.22
+    hooks:
+      # Hook: Format markdown files
+      - id: mdformat
+        types_or: [markdown]
+        # Optionally add plugins
+        additional_dependencies:
+          - mdformat-gfm
+
+  - repo: local
+    hooks:
+      # Hook: Run ty type checker on changed files before commit
+      - id: ty-check
+        name: ty-check
+        description: "Run ty type checker on changed Python files"
+        entry: uv run ty check
+        types_or: [python, pyi]
+        language: system
+        pass_filenames: true
+        stages: [pre-commit]
+
+      # Hook: run `pytest` on changed files before commit
+      - id: pytest-only-changed
+        name: pytest-only-changed
+        description: "Run only the necessary tests before commit"
+        entry: uv run pytest --testmon
+        types_or: [python, pyi]
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # Hook: run `pytest` on all tests before push
+      - id: pytest-all
+        name: pytest-all
+        description: "Run all tests before push"
+        entry: uv run pytest
+        types_or: [python, pyi]
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      # Hook: run `uv sync` on checkout/rebase
+      - id: uv-sync
+        name: uv-sync
+        description: "Automatically run 'uv sync' on all projects after a checkout, pull or rebase"
+        entry: uv sync --locked --all-packages
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-checkout, post-merge, post-rewrite]
